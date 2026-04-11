@@ -44,11 +44,4 @@ python tools/parse_vcd_fetch.py data.vcd
 ```
 
 ## ライセンス
-MIT License (または適切なライセンスを指定してください)
-
-## 関連リンク
-- 製作記： [ここに記事のリンクなどを貼る想定]
-- GitHub: [https://github.com/matsudo840/rojin-z80](https://github.com/matsudo840/rojin-z80)
-
----
-(c) 2026 matsudo840
+MIT License
