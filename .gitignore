@@ -1,0 +1,20 @@
+.pio
+.DS_Store
+
+# Local VS Code settings
+.vscode/
+firmware/.vscode/
+
+# Build artifacts
+*.bin
+*.elf
+*.hex
+**/build/
+
+# Fritzing/CAD temporary files
+cad/tmp/
+*.fzz.bak
+
+# Library and dependency caches
+.piopm
+libdeps/
