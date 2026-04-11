@@ -5,9 +5,8 @@
 #include <Wire.h>
 
 /* 
- * Roujin Z80: Standalone Endless "M3!" (No Serial Version)
- * - Optimized for External Power (AC Adapter)
- * - All Serial commands removed to prevent buffer-fill hangs
+ * Roujin Z80: Perfect Sync Endless "M3!"
+ * - Pulsing clock even during 1s delay to keep Z80 stable
  */
 
 const uint8_t ADDR_PINS[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0}; 
@@ -49,6 +48,7 @@ const uint8_t z80_program[] = {
 
 inline uint16_t getAddress() {
     uint32_t gpio_in = GPIO.in;
+    // A0-A12: GPIO 1-13, A13: GPIO 0
     return ((gpio_in >> 1) & 0x1FFF) | ((gpio_in & 0x01) << 13);
 }
 
@@ -78,6 +78,7 @@ inline void setData(uint8_t data) {
     }
 }
 
+// クロックを一回振る（Z80の心臓を動かし続ける）
 void pulseClock() {
     digitalWrite(CLK_PIN, HIGH);
     delayMicroseconds(10);
@@ -86,8 +87,9 @@ void pulseClock() {
 }
 
 void setup() {
-    // Serial is removed for standalone stability
+    Serial.begin(115200);
 
+    // 消灯
     led48.begin(); led48.setPixelColor(0, 0); led48.show();
     led38.begin(); led38.setPixelColor(0, 0); led38.show();
     
@@ -121,12 +123,15 @@ void setup() {
     memset(virtual_memory, 0, sizeof(virtual_memory));
     memcpy(virtual_memory, z80_program, sizeof(z80_program));
 
-    // Initial reset sequence
+    Serial.println("RoujinZ80: Perfect Sync Loop Starting...");
+    
+    // リセット解除
     for(int i = 0; i < 100; i++) { pulseClock(); }
     digitalWrite(RESET_PIN, HIGH);
 }
 
 void loop() {
+    // クロック立下げ
     digitalWrite(CLK_PIN, LOW);
     delayMicroseconds(5);
 
@@ -136,10 +141,11 @@ void loop() {
         if (digitalRead(WR_PIN) == LOW) {
             uint8_t data = getData();
             if (port == 0x80) {
-                digitalWrite(WAIT_PIN, LOW);
+                digitalWrite(WAIT_PIN, LOW); // Z80を一時停止
                 
                 display.write((char)data);
                 display.display();
+                Serial.printf("IO OUT: %c\n", (char)data);
                 
                 if (display.getCursorY() >= 64) {
                     display.fillRect(0, 16, 128, 48, SSD1306_BLACK);
@@ -147,14 +153,16 @@ void loop() {
                     display.display();
                 }
 
-                // Maintain clock during IO wait
+                // ウェイト中もクロックを振り続けて Z80 を「生かしておく」
+                // 1秒間 (約50回×20ms) の人間用ディレイ
                 for(int i = 0; i < 50; i++) {
                     digitalWrite(CLK_PIN, HIGH); delay(10);
                     digitalWrite(CLK_PIN, LOW);  delay(10);
                 }
 
-                digitalWrite(WAIT_PIN, HIGH);
+                digitalWrite(WAIT_PIN, HIGH); // Z80再開
             }
+            // WRが戻るまで待機
             while(digitalRead(WR_PIN) == LOW) { pulseClock(); }
         }
     }
@@ -174,6 +182,7 @@ void loop() {
         }
     }
 
+    // クロック立上げ
     digitalWrite(CLK_PIN, HIGH);
     delayMicroseconds(10);
 }
