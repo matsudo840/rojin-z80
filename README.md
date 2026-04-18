@@ -1,4 +1,4 @@
-# 老人Z80 (RojinZ80) - ESP32-S3によるZ80 CPU介護プロジェクト
+# 老人Z80 - ESP32-S3によるZ80 CPU介護プロジェクト
 
 このレポジトリは、[エムスリーテックブック9](https://techbookfest.org/product/tQtQhhFVHnRkH0bFCUikYK?productVariantID=5prWVthbVuZMdKxmcTBut0) 第9章「老人Z80 — ESP32によるZ80 CPU介護ボード製作記」のサポートページです。
 
